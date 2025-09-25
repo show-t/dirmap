@@ -1,0 +1,42 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.dylib
+*.so
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Logs
+*.log
+
+# By Cargo
+Cargo.lock
+
+# dotenv files
+.env
+.env.*
+!.env.sample
+
+# Rust analyzer
+.target/
+
+# output files
+/output
+
+# Local device alias mapping (not for sharing)
+device_aliases.json
