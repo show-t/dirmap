@@ -2,7 +2,7 @@ use std::fs::{self, File};
 use std::path::Path;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, error::ErrorKind};
 use serde_yaml::Value;
 
 use crate::macros::*;
@@ -20,7 +20,20 @@ impl Dispatcher {
 
 impl Dispatcher {
     pub async fn dispatch(&self) -> Result<()> {
-        let args: Args = try_with_log!(Args::try_parse().map_err(|e| e));
+        //let args: Args = try_with_log!(Args::try_parse().map_err(|e| e));
+        let args: Args = match  Args::try_parse() {
+            Ok(a) => a,
+            Err(err) if err.kind() == ErrorKind::DisplayHelp
+                    || err.kind() == ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
+                => {
+                    err.print()?;
+                    return Ok(());
+                }
+            Err(err) => {
+                tracing::error!("Something went wrong: {:?}", err);
+                return Err(err.into())
+            }
+        };
 
         match args.command {
             Commands::Create {
