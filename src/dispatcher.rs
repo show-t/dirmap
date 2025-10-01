@@ -10,32 +10,38 @@ use logkit_macros::try_with_log;
 use crate::cli::{Args, Commands};
 use crate::structure_service::{ create_from_value, dir_to_yaml };
 
-pub struct Dispatcher {}
+pub struct Dispatcher {
+    args: Args,
+}
 
 impl Dispatcher {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            args: Self::parse(),
+        }
+    }
+
+    fn parse() -> Args {
+        match  Args::try_parse() {
+            Ok(a) => a,
+            Err(err) if err.kind() == ErrorKind::DisplayHelp
+                    || err.kind() == ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
+                => {
+                    _ = err.print();
+                    std::process::exit(0);
+                }
+            Err(err) => {
+                tracing::error!("Something went wrong: {:?}", err);
+                std::process::exit(0);
+            }
+        }
     }
 }
 
 impl Dispatcher {
     #[try_with_log]
     pub async fn dispatch(&self) -> Result<()> {
-        let args: Args = match  Args::try_parse() {
-            Ok(a) => a,
-            Err(err) if err.kind() == ErrorKind::DisplayHelp
-                    || err.kind() == ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
-                => {
-                    err.print()?;
-                    return Ok(());
-                }
-            Err(err) => {
-                tracing::error!("Something went wrong: {:?}", err);
-                return Err(err.into())
-            }
-        };
-
-        match args.command {
+        match &self.args.command {
             Commands::Create {
                 input,
                 output
