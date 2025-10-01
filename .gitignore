@@ -37,6 +37,3 @@ Cargo.lock
 
 # output files
 /output
-
-# Local device alias mapping (not for sharing)
-device_aliases.json

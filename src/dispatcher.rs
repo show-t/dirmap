@@ -20,7 +20,6 @@ impl Dispatcher {
 
 impl Dispatcher {
     pub async fn dispatch(&self) -> Result<()> {
-        //let args: Args = try_with_log!(Args::try_parse().map_err(|e| e));
         let args: Args = match  Args::try_parse() {
             Ok(a) => a,
             Err(err) if err.kind() == ErrorKind::DisplayHelp
