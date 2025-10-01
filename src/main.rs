@@ -1,8 +1,6 @@
 use anyhow::Result;
 use dotenvy;
 
-mod macros;
-
 mod tracing_setup;
 use tracing_setup::tracing_init;
 

@@ -5,7 +5,7 @@ use anyhow::Result;
 use clap::{Parser, error::ErrorKind};
 use serde_yaml::Value;
 
-use crate::macros::*;
+use logkit_macros::try_with_log;
 
 use crate::cli::{Args, Commands};
 use crate::structure_service::{ create_from_value, dir_to_yaml };
@@ -19,6 +19,7 @@ impl Dispatcher {
 }
 
 impl Dispatcher {
+    #[try_with_log]
     pub async fn dispatch(&self) -> Result<()> {
         let args: Args = match  Args::try_parse() {
             Ok(a) => a,
@@ -39,12 +40,12 @@ impl Dispatcher {
                 input,
                 output
             } => {
-                let yaml_str = try_with_log!(fs::read_to_string(&input));
-                let data: Value = try_with_log!(serde_yaml::from_str(&yaml_str));
+                let yaml_str = fs::read_to_string(&input)?;
+                let data: Value = serde_yaml::from_str(&yaml_str)?;
                 let base = Path::new(&output);
                 
-                try_with_log!(fs::create_dir_all(base));
-                try_with_log!(create_from_value(base, &data));
+                fs::create_dir_all(base)?;
+                create_from_value(base, &data)?;
 
                 tracing::info!("Directory structure created successfully at `{}`.", base.display());
                 
@@ -53,10 +54,10 @@ impl Dispatcher {
                 target, 
                 output 
             } => {
-                let yaml_value = try_with_log!(dir_to_yaml(Path::new(&target)));
+                let yaml_value = dir_to_yaml(Path::new(&target))?;
         
-                let file = try_with_log!(File::create(Path::new(&output)));
-                try_with_log!(serde_yaml::to_writer(file, &yaml_value));
+                let file = File::create(Path::new(&output))?;
+                serde_yaml::to_writer(file, &yaml_value)?;
 
                 tracing::info!("YAML written to {}", output);
             }
